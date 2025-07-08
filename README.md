@@ -24,7 +24,6 @@
 红外接收头    -> 按原理图连接
 LCD显示屏     -> SPI接口
 LED0-LED7    -> PC0-PC7
-串口调试      -> PA9/PA10 (115200波特率)
 ```
 
 ## 软件架构
@@ -190,39 +189,7 @@ if(key != last_key) {
 }
 ```
 
-## 编译与下载
-
-### 开发环境
-- **IDE**: Keil uVision5
-- **编译器**: ARMCC V5.06
-- **调试器**: ST-Link V2
-- **下载工具**: ST-Link Utility
-
-### 编译步骤
-1. 打开Keil工程文件 `LCD.uvprojx`
-2. 选择Target: `Target 1`
-3. 点击编译按钮或按F7
-4. 检查编译输出无错误
-5. 连接ST-Link下载器
-6. 点击下载按钮或按F8
-
-### 编译配置
-```
-Target Device: STM32F411CE
-Clock: 96MHz (HSE: 25MHz, PLL)
-RAM: 128KB
-Flash: 512KB
-Optimization: Level 1 (-O1)
-```
-
 ## 使用说明
-
-### 快速上手
-1. **硬件连接**: 确保开发板、LCD、红外接收头正确连接
-2. **程序下载**: 编译并下载程序到STM32
-3. **上电启动**: 观察LCD显示主页面
-4. **遥控测试**: 使用红外遥控器测试各个按键
-5. **功能验证**: 测试LED控制和亮度调节
 
 ### 基本操作
 ```
@@ -307,21 +274,6 @@ void Display_New_Page(void) {
     LCD_ShowString(10, 10, 240, 16, 16, "New Function Page");
 }
 ```
-
-## 技术参数
-
-### 系统规格
-- **MCU**: STM32F411CE (Cortex-M4, 100MHz)
-- **存储**: 512KB Flash + 128KB RAM
-- **外设**: TIM1(PWM), TIM2(软件PWM), SPI1(LCD), USART1(调试)
-- **电源**: 3.3V/5V兼容
-
-### 性能指标
-- **响应时间**: 按键响应 < 50ms
-- **PWM频率**: 100Hz (软件PWM)
-- **显示刷新**: 实时更新
-- **串口波特率**: 115200bps
-- **功耗**: 工作电流 < 200mA
 
 ## 版权声明
 
