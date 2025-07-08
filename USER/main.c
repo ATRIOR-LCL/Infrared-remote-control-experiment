@@ -11,7 +11,7 @@
  ALIENTEK NANO STM32F4 IR Remote Control LCD Display Test
  Technical Support: www.openedv.com
  Author: ALIENTEK Team
- Modified: 2025-07-08
+ Modified: 2025-07-05
  Hardware: NANO STM32F4 Development Board
  ************************************************/
 
