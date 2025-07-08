@@ -14,7 +14,7 @@
 ## 硬件要求
 
 ### 开发板
-- **ALIENTEK NANO STM32F4开发板** (STM32F411CE)
+- **ALIENTEK NANO STM32F4开发板** (STM32F411RC)
 - **1.3寸TFT LCD显示屏** (SPI接口)
 - **红外接收头** (连接到指定GPIO)
 - **8路LED** (PC0-PC7)
