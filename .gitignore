@@ -1,0 +1,52 @@
+# STM32 项目 .gitignore 文件
+
+# HAL 库文件 - 这些是标准库，不需要版本控制
+HALLIB/
+CORE/
+
+# 编译生成的文件和对象文件
+OBJ/
+*.o
+*.obj
+*.crf
+*.d
+*.lst
+*.axf
+*.hex
+*.map
+*.htm
+*.build_log.htm
+*.lnp
+*.sct
+*.dep
+
+# Keil uVision 项目文件（保留项目配置，忽略用户特定文件）
+*.uvguix.*
+*.uvoptx
+*.bak
+*.orig
+
+# 调试配置文件（用户特定）
+USER/DebugConfig/
+USER/RTE/
+
+# 临时文件
+*.tmp
+*.temp
+
+# IDE 生成的文件
+*.swp
+*.swo
+*~
+
+# 日志文件
+*.log
+
+# 操作系统生成的文件
+.DS_Store
+Thumbs.db
+
+# 其他不需要的文件
+*.zip
+*.rar
+*.7z
