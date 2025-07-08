@@ -1,13 +1,13 @@
 #include "remote.h"
 #include "delay.h"
 //////////////////////////////////////////////////////////////////////////////////	 
-//本程序只供学习使用，未经作者许可，不得用于其它任何用途
-//ALIENTEK NANO STM32F4开发板
-//红外遥控接收 驱动代码	   
-//正点原子@ALIENTEK
-//技术论坛:www.openedv.com
-//修改日期:2019/3/27
-//版本：V1.0
+// This program is for learning purposes only.
+// ALIENTEK NANO STM32F4 Development Board
+// Infrared Remote Control Driver Code	   
+// ALIENTEK Team
+// Forum: www.openedv.com
+// Modified: 2019/3/27
+// Version: V1.0
 //版权所有，盗版必究。
 //Copyright(C) 广州市星翼电子科技有限公司 2019-2029
 //All rights reserved									  

@@ -343,12 +343,20 @@ if((key == 98 || key == 168) && key_repeat_count >= 25) {
 
 **中文乱码修复**:
 ```c
-// 修复前：中文注释导致编译警告
+// 修复前：中文注释导致编译警告和显示乱码
 printf("亮度调节: %d\r\n", brightness);
+// 显示按键信息（不使用strcat避免警告）
 
-// 修复后：使用英文输出
+// 修复后：使用英文输出和注释  
 printf("Brightness Level: %d\r\n", brightness);
+// Display key information (avoid using strcat to prevent warnings)
 ```
+
+**修复内容**:
+- ✅ main.c: 所有中文注释替换为英文
+- ✅ pwm.c: 文件头和变量注释英文化
+- ✅ remote.c: 版权声明和注释英文化
+- ✅ 创建编码修复指南文档
 
 ---
 

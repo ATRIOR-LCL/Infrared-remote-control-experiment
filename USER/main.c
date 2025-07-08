@@ -88,27 +88,27 @@ int main(void)
 			}
 			else if(key_debounce_timer == 0)
 			{
-				// 同一按键，检查重复计数
+				// Same key, check repeat count
 				key_repeat_count++;
 				
-				// 对于UP/DOWN键，实现延时重复触发（用于亮度连续调节）
-				if((key == 98 || key == 168) && key_repeat_count >= 25) // 250ms后开始重复
+				// For UP/DOWN keys, implement delayed repeat trigger (for continuous brightness adjustment)
+				if((key == 98 || key == 168) && key_repeat_count >= 25) // Start repeat after 250ms
 				{
-					key_repeat_count = 20; // 重置为较小值，加快重复速度
+					key_repeat_count = 20; // Reset to smaller value for faster repeat
 					Show_Key_Info_New(key);
 					printf("Key Value: 0x%02X (%d) [Repeat]\r\n", key, key);
 					Process_Remote_Key(key);
 				}
 				else if(key_repeat_count > 1 && key != 98 && key != 168)
 				{
-					// 其他按键不允许快速重复，忽略
+					// Other keys don't allow fast repeat, ignore
 					key = 0;
 				}
 			}
 		}
 		else
 		{
-			// 无按键时，清除重复计数
+			// When no key is pressed, clear repeat count
 			if(last_key != 0)
 			{
 				last_key = 0;
@@ -120,7 +120,7 @@ int main(void)
 	}
 }
 
-// ��ʾ��ҳ
+// Display main page
 void Display_Main_Page(void)
 {
 	LCD_Clear(BLACK);
@@ -143,7 +143,7 @@ void Display_Main_Page(void)
 	Update_LED_Display();
 }
 
-// ��ʾLED����ҳ
+// Display LED control page
 void Display_LED_Control_Page(void)
 {
 	LCD_Clear(BLUE);
@@ -157,7 +157,7 @@ void Display_LED_Control_Page(void)
 	Update_LED_Display();
 }
 
-// ��ʾ������ҳ
+// Display brightness page
 void Display_Brightness_Page(void)
 {
 	LCD_Clear(GREEN);
@@ -171,12 +171,12 @@ void Display_Brightness_Page(void)
 	Update_LED_Display();
 }
 
-// ����LED��ʾ
+// Update LED display
 void Update_LED_Display(void)
 {
 	char str[50];
 	
-	if(current_page == 0) // ��ҳ
+	if(current_page == 0) // Main page
 	{
 		POINT_COLOR = GREEN;
 		BACK_COLOR = BLACK;
@@ -184,7 +184,7 @@ void Update_LED_Display(void)
 				led_status ? "OFF" : "ON", led_brightness);
 		LCD_ShowString(10, 215, 240, 12, 12, str);
 	}
-	else if(current_page == 1) // LED����ҳ
+	else if(current_page == 1) // LED control page
 	{
 		POINT_COLOR = YELLOW;
 		BACK_COLOR = BLUE;
@@ -194,14 +194,14 @@ void Update_LED_Display(void)
 		sprintf(str, "Current: %s", led_status ? "OFF" : "ON");
 		LCD_ShowString(10, 75, 240, 12, 12, str);
 	}
-	else if(current_page == 2) // ������ҳ
+	else if(current_page == 2) // Brightness page
 	{
 		POINT_COLOR = BLACK;
 		BACK_COLOR = GREEN;
 		sprintf(str, "%d / 10", led_brightness);
 		LCD_ShowString(150, 40, 240, 16, 16, str);
 		
-		// ��ʾ������������
+		// Display brightness progress bar
 		for(int i = 0; i < 10; i++)
 		{
 			if(i < led_brightness)
@@ -212,7 +212,7 @@ void Update_LED_Display(void)
 	}
 }
 
-// ����ң������
+// Process remote key
 void Process_Remote_Key(u8 key)
 {
     switch(key)
@@ -302,11 +302,11 @@ void Process_Remote_Key(u8 key)
             Show_Key_Info_New(key);
             break;
             
-        case 224: // KEY_VOL_DOWN - 小数点显�?
+        case 224: // KEY_VOL_DOWN - Function G
             Show_Key_Info_New(key);
             break;
             
-        case 226: // KEY_ALIENTEK - 功能B
+        case 226: // KEY_ALIENTEK - Function H
             Show_Key_Info_New(key);
             break;
             
@@ -315,7 +315,7 @@ void Process_Remote_Key(u8 key)
     }
 }
 
-// ����ȫ��LED
+// Control all LEDs
 void LED_All_Control(u8 state)
 {
 	LED0 = state;
@@ -328,14 +328,14 @@ void LED_All_Control(u8 state)
 	LED7 = state;
 }
 
-// LED控制函数（与实验21兼容）
+// LED control functions (compatible with experiment 21)
 void LED_Toggle(u8 led_num)
 {
     if(led_num < 8)
     {
         led_status_array[led_num] = !led_status_array[led_num];
         
-        // 直接控制LED状态，亮度由软件PWM自动处理
+        // Direct LED control, brightness handled by software PWM automatically
         switch(led_num)
         {
             case 0: LED0 = led_status_array[0]; break;
@@ -348,7 +348,7 @@ void LED_Toggle(u8 led_num)
             case 7: LED7 = led_status_array[7]; break;
         }
         
-        // 软件PWM会自动处理亮度，无需手动调用LED_Brightness_Set
+        // Software PWM will handle brightness automatically, no need to call LED_Brightness_Set manually
     }
 }
 
@@ -375,7 +375,7 @@ void LED_All_Set(u8 status)
     LED6 = status;
     LED7 = status;
     
-    // 软件PWM会自动处理亮度控制
+    // Software PWM will handle brightness control automatically
 }
 
 void LED_Brightness_Up(void)
@@ -383,9 +383,9 @@ void LED_Brightness_Up(void)
     if(led_brightness_level < 10)
     {
         led_brightness_level++;
-        led_brightness = led_brightness_level; // 同步旧变量
+        led_brightness = led_brightness_level; // Sync old variable
         
-        // 更新软件PWM亮度设置
+        // Update software PWM brightness setting
         LED_Brightness_Set(led_brightness_level);
         Update_LED_Display();
     }
@@ -396,9 +396,9 @@ void LED_Brightness_Down(void)
     if(led_brightness_level > 0)
     {
         led_brightness_level--;
-        led_brightness = led_brightness_level; // 同步旧变量
+        led_brightness = led_brightness_level; // Sync old variable
         
-        // 更新软件PWM亮度设置
+        // Update software PWM brightness setting
         LED_Brightness_Set(led_brightness_level);
         Update_LED_Display();
     }
@@ -406,7 +406,7 @@ void LED_Brightness_Down(void)
 
 void System_Mode_Switch(void)
 {
-    // 切换页面显示模式（与原有逻辑兼容�?
+    // Switch page display mode (compatible with original logic)
     current_page = (current_page + 1) % 3;
     if(current_page == 0)
         Display_Main_Page();
@@ -416,8 +416,8 @@ void System_Mode_Switch(void)
         Display_Brightness_Page();
 }
 
-// ��ʾ����Ϣ
-// 显示按键信息（不使用strcat避免警告�?
+// Display key information
+// Display key information (avoid using strcat to prevent warnings)
 void Show_Key_Info_New(u8 key)
 {
 	char str[50];
@@ -425,10 +425,10 @@ void Show_Key_Info_New(u8 key)
 	POINT_COLOR = RED;
 	BACK_COLOR = WHITE;
 	
-	// 清除位置，准备显示按键信�?
+	// Clear position, prepare to display key information
 	LCD_Fill(10, 225, 230, 240, WHITE);
 	
-	// 使用sprintf直接生成完整字符串，避免strcat警告
+	// Use sprintf to generate complete string directly, avoid strcat warnings
 	switch(key)
 	{
 		case 162: sprintf(str, "Key:0x%02X POWER", key); break;

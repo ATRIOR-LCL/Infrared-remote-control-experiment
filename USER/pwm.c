@@ -2,33 +2,32 @@
 #include "led.h"
 
 //////////////////////////////////////////////////////////////////////////////////	 
-//本程序只供学习使用，未经作者许可，不得用于其它任何用途
-//ALIENTEK NANO STM32F4开发板
-//PWM输出驱动代码	   
-//正点原子@ALIENTEK
-//技术论坛:www.openedv.com
-//版本：V1.0
-//版权所有，盗版必究。
-//Copyright(C) 广州市星翼电子科技有限公司 2019-2029
-//All rights reserved									  
+// This program is for learning purposes only. 
+// ALIENTEK NANO STM32F4 Development Board
+// PWM Output Driver Code	   
+// ALIENTEK Team
+// Forum: www.openedv.com
+// Version: V1.0
+// Copyright(C) Guangzhou ALIENTEK Electronics Co., Ltd. 2019-2029
+// All rights reserved									  
 //////////////////////////////////////////////////////////////////////////////////
 
-TIM_HandleTypeDef TIM1_Handler;         //定时器句柄
-TIM_HandleTypeDef TIM2_Handler;         //定时器2句柄用于软件PWM
+TIM_HandleTypeDef TIM1_Handler;         // Timer handle
+TIM_HandleTypeDef TIM2_Handler;         // Timer 2 handle for software PWM
 
-// 软件PWM相关变量
-static u8 software_pwm_counter = 0;     // 软件PWM计数器
-static u8 led_brightness_duty = 5;      // LED亮度占空比(0-10)
+// Software PWM related variables
+static u8 software_pwm_counter = 0;     // Software PWM counter
+static u8 led_brightness_duty = 5;      // LED brightness duty cycle (0-10)
 
-//TIM1 PWM部分初始化 
-//arr：自动重装值
-//psc：时钟预分频数
+// TIM1 PWM initialization
+// arr: auto-reload value
+// psc: clock prescaler
 void TIM1_PWM_Init(u16 arr,u16 psc)
 {  
-    // 初始化硬件PWM（可选，如果需要的话）
-    TIM_OC_InitTypeDef TIM1_CH1Handler;	    //定时器1通道1句柄
+    // Initialize hardware PWM (optional, if needed)
+    TIM_OC_InitTypeDef TIM1_CH1Handler;	    // Timer 1 channel 1 handle
 	
-    TIM1_Handler.Instance=TIM1;                      //定时器1
+    TIM1_Handler.Instance=TIM1;                      // Timer 1
     TIM1_Handler.Init.Prescaler=psc;                 //定时器分频
     TIM1_Handler.Init.CounterMode=TIM_COUNTERMODE_UP;//向上计数模式
     TIM1_Handler.Init.Period=arr;                    //自动重装载值
