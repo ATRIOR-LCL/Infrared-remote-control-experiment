@@ -2,118 +2,107 @@
 #include "led.h"
 
 //////////////////////////////////////////////////////////////////////////////////	 
-// This program is for learning purposes only. 
-// ALIENTEK NANO STM32F4 Development Board
-// PWM Output Driver Code	   
-// ALIENTEK Team
-// Forum: www.openedv.com
-// Version: V1.0
-// Copyright(C) Guangzhou ALIENTEK Electronics Co., Ltd. 2019-2029
-// All rights reserved									  
+// 红外遥控LED调光系统 - PWM驱动模块
+// 功能说明：实现硬件PWM和软件PWM功能，用于LED亮度控制
+// 硬件PWM：使用TIM1定时器产生PWM信号（可选功能）
+// 软件PWM：使用TIM2定时器中断实现8路LED亮度调节
+// 开发板：ALIENTEK STM32F4 NANO
+// 版本：V1.0
+// 日期：2025年7月
 //////////////////////////////////////////////////////////////////////////////////
 
-TIM_HandleTypeDef TIM1_Handler;         // Timer handle
-TIM_HandleTypeDef TIM2_Handler;         // Timer 2 handle for software PWM
+TIM_HandleTypeDef TIM2_Handler;         // 定时器2句柄（软件PWM用）
 
-// Software PWM related variables
-static u8 software_pwm_counter = 0;     // Software PWM counter
-static u8 led_brightness_duty = 5;      // LED brightness duty cycle (0-10)
+// 软件PWM相关变量
+static u8 software_pwm_counter = 0;     // 软件PWM计数器（0-9循环计数）
+static u8 led_brightness_duty = 5;      // LED亮度占空比（0-10级，5为中等亮度）
 
-// TIM1 PWM initialization
-// arr: auto-reload value
-// psc: clock prescaler
-void TIM1_PWM_Init(u16 arr,u16 psc)
-{  
-    // Initialize hardware PWM (optional, if needed)
-    TIM_OC_InitTypeDef TIM1_CH1Handler;	    // Timer 1 channel 1 handle
-	
-    TIM1_Handler.Instance=TIM1;                      // Timer 1
-    TIM1_Handler.Init.Prescaler=psc;                 //定时器分频
-    TIM1_Handler.Init.CounterMode=TIM_COUNTERMODE_UP;//向上计数模式
-    TIM1_Handler.Init.Period=arr;                    //自动重装载值
-    TIM1_Handler.Init.ClockDivision=TIM_CLOCKDIVISION_DIV1;
-    HAL_TIM_PWM_Init(&TIM1_Handler);                 //初始化PWM
+// TIM2 PWM初始化函数
+// 功能：配置软件PWM定时器
+// 说明：本项目主要使用软件PWM实现LED亮度调节
+void TIM2_PWM_Init(u16 arr,u16 psc)
+{
+    // ============== 软件PWM定时器初始化 ==============
+    // 使用TIM2定时器产生100Hz的中断，用于软件PWM控制
+    TIM2_Handler.Instance = TIM2;                    // 选择定时器2
+    TIM2_Handler.Init.Prescaler = 9599;              // 预分频：96MHz/(9599+1) = 10kHz
+    TIM2_Handler.Init.CounterMode = TIM_COUNTERMODE_UP; // 向上计数模式
+    TIM2_Handler.Init.Period = 99;                   // 重装载值：10kHz/100 = 100Hz中断频率
+    TIM2_Handler.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1; // 不分频
+    HAL_TIM_Base_Init(&TIM2_Handler);                // 初始化定时器基本功能
     
-    TIM1_CH1Handler.OCMode=TIM_OCMODE_PWM1;          //模式选择PWM1
-    TIM1_CH1Handler.Pulse=arr/2;                     //设置比较值,此值用来确定占空比，默认比较值为自动重装载值的一半,即占空比为50%
-    TIM1_CH1Handler.OCPolarity=TIM_OCPOLARITY_HIGH;  //输出比较极性为高 
-    HAL_TIM_PWM_ConfigChannel(&TIM1_Handler,&TIM1_CH1Handler,TIM_CHANNEL_1);//配置TIM1通道1
-    HAL_TIM_PWM_Start(&TIM1_Handler,TIM_CHANNEL_1);  //开启PWM通道1
-    
-    // 初始化软件PWM定时器TIM2
-    TIM2_Handler.Instance = TIM2;
-    TIM2_Handler.Init.Prescaler = 9599;              // 分频至10kHz (96MHz/9600 = 10kHz)
-    TIM2_Handler.Init.CounterMode = TIM_COUNTERMODE_UP;
-    TIM2_Handler.Init.Period = 99;                   // 100次计数 = 100Hz PWM频率
-    TIM2_Handler.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-    HAL_TIM_Base_Init(&TIM2_Handler);
-    
-    // 使能定时器2中断
+    // 启动定时器2中断，每10ms产生一次中断用于软件PWM
     HAL_TIM_Base_Start_IT(&TIM2_Handler);
 }
 
-//定时器底层驱动，开启时钟，设置中断优先级
-//此函数会被HAL_TIM_PWM_Init()调用
-//htim:定时器句柄
+//定时器PWM底层驱动初始化函数
+//功能：配置GPIO引脚复用功能，使PA8引脚输出TIM1的PWM信号
+//说明：此函数由HAL_TIM_PWM_Init()自动调用，无需手动调用
+//htim：定时器句柄指针
 void HAL_TIM_PWM_MspInit(TIM_HandleTypeDef *htim)
 {
-    GPIO_InitTypeDef GPIO_Initure;
-    __HAL_RCC_TIM1_CLK_ENABLE();			//使能定时器1
-    __HAL_RCC_GPIOA_CLK_ENABLE();			//开启GPIOA时钟
+    GPIO_InitTypeDef GPIO_Initure;           // GPIO初始化结构体
+    __HAL_RCC_TIM1_CLK_ENABLE();			// 使能定时器1时钟
+    __HAL_RCC_GPIOA_CLK_ENABLE();			// 使能GPIOA端口时钟
     
-    GPIO_Initure.Pin=GPIO_PIN_8;           	//PA8
-    GPIO_Initure.Mode=GPIO_MODE_AF_PP;  	//复用推挽输出
-    GPIO_Initure.Pull=GPIO_PULLUP;          //上拉
-    GPIO_Initure.Speed=GPIO_SPEED_HIGH;     //高速
-    GPIO_Initure.Alternate= GPIO_AF1_TIM1;	//PA8复用为TIM1通道1
-    HAL_GPIO_Init(GPIOA,&GPIO_Initure);
+    // 配置PA8引脚作为TIM1_CH1的PWM输出
+    GPIO_Initure.Pin=GPIO_PIN_8;           	// 选择PA8引脚
+    GPIO_Initure.Mode=GPIO_MODE_AF_PP;  	// 复用推挽输出模式
+    GPIO_Initure.Pull=GPIO_PULLUP;          // 内部上拉电阻
+    GPIO_Initure.Speed=GPIO_SPEED_HIGH;     // 高速IO模式
+    GPIO_Initure.Alternate= GPIO_AF1_TIM1;	// PA8复用为TIM1通道1功能
+    HAL_GPIO_Init(GPIOA,&GPIO_Initure);     // 初始化GPIO
 }
 
-//定时器底层驱动，开启时钟，设置中断优先级
-//此函数会被HAL_TIM_Base_Init()调用
-//htim:定时器句柄
+//定时器基础功能底层驱动初始化函数
+//功能：使能定时器时钟，配置NVIC中断优先级
+//说明：此函数由HAL_TIM_Base_Init()自动调用，专门处理TIM2的底层配置
+//htim：定时器句柄指针
 void HAL_TIM_Base_MspInit(TIM_HandleTypeDef *htim)
 {
-    if(htim->Instance == TIM2)
+    if(htim->Instance == TIM2)              // 判断是否为定时器2
     {
-        __HAL_RCC_TIM2_CLK_ENABLE();        //使能定时器2时钟
-        HAL_NVIC_SetPriority(TIM2_IRQn, 2, 0); //设置中断优先级
-        HAL_NVIC_EnableIRQ(TIM2_IRQn);      //使能定时器2中断
+        __HAL_RCC_TIM2_CLK_ENABLE();        // 使能定时器2时钟
+        HAL_NVIC_SetPriority(TIM2_IRQn, 2, 0); // 设置TIM2中断优先级为2
+        HAL_NVIC_EnableIRQ(TIM2_IRQn);      // 使能定时器2中断
     }
 }
 
-//设置TIM1通道1的占空比
-//duty：占空比设置
-void LED_PWM_Set_Duty(u8 led_num, u16 duty)
-{
-    __HAL_TIM_SET_COMPARE(&TIM1_Handler,TIM_CHANNEL_1,duty);
-}
-
-// LED亮度设置（0-10级）- 使用软件PWM控制LED亮度
+// LED亮度设置函数（0-10级亮度调节）
+// 功能：设置软件PWM的占空比，实现LED亮度调节
+// 参数：brightness_level - 亮度等级（0最暗，10最亮）
+// 原理：通过改变PWM占空比来控制LED的平均功率，从而调节亮度
+//      0级 = 占空比0%（完全熄灭），10级 = 占空比100%（最亮）
 void LED_Brightness_Set(u8 brightness_level)
 {
-    if(brightness_level > 10) brightness_level = 10;
-    led_brightness_duty = brightness_level;
+    if(brightness_level > 10) brightness_level = 10;  // 限制最大值为10
+    led_brightness_duty = brightness_level;            // 保存亮度等级
 }
 
-// 软件PWM LED控制函数 - 在定时器中断中调用
+// 软件PWM LED控制核心函数
+// 功能：在定时器中断中调用，实现软件PWM波形生成
+// 原理：每次中断counter递增，通过比较counter与duty值来控制LED开关
+//      实现PWM波形：counter < duty时LED亮，counter >= duty时LED灭
+// 调用：由TIM2中断每10ms调用一次，形成100Hz的PWM频率
 void Software_PWM_LED_Control(void)
 {
-    software_pwm_counter++;
-    if(software_pwm_counter >= 10) 
+    software_pwm_counter++;                     // PWM计数器递增
+    if(software_pwm_counter >= 10)              // 计数到10时归零（0-9循环）
         software_pwm_counter = 0;
     
-    // 根据占空比控制LED状态（仅对开启的LED有效）
-    // 这个函数需要知道哪些LED当前是开启状态的
-    extern u8 led_status_array[8];  // 引用main.c中的LED状态数组
+    // 根据PWM占空比控制LED亮度（仅对开启的LED有效）
+    // 从main.c引用LED状态数组，判断哪些LED是开启状态
+    extern u8 led_status_array[8];             // 外部引用LED状态数组
     
+    // 遍历8个LED，对每个开启的LED应用PWM控制
     for(u8 i = 0; i < 8; i++)
     {
-        if(led_status_array[i] == 0)  // 如果LED开启
+        if(led_status_array[i] == 0)            // LED状态为0表示开启
         {
+            // PWM波形生成：counter < duty时输出低电平（LED亮）
             if(software_pwm_counter < led_brightness_duty)
             {
-                // LED应该点亮
+                // 输出低电平，LED点亮（共阳极接法，低电平有效）
                 switch(i)
                 {
                     case 0: LED0 = 0; break;  // 0表示点亮
@@ -128,7 +117,7 @@ void Software_PWM_LED_Control(void)
             }
             else
             {
-                // LED应该熄灭
+                // 输出高电平，LED熄灭
                 switch(i)
                 {
                     case 0: LED0 = 1; break;  // 1表示熄灭
@@ -145,12 +134,17 @@ void Software_PWM_LED_Control(void)
     }
 }
 
-// 定时器2中断服务函数
+// 定时器2中断服务函数（软件PWM的核心）
+// 功能：每10ms执行一次，产生软件PWM波形控制LED亮度
+// 原理：在中断中调用Software_PWM_LED_Control()函数
+//      通过定时器中断的精确定时，实现稳定的PWM频率
+// 频率：100Hz（每10ms一次中断，PWM周期为100ms）
 void TIM2_IRQHandler(void)
 {
+    // 检查定时器更新中断标志位
     if(__HAL_TIM_GET_FLAG(&TIM2_Handler, TIM_FLAG_UPDATE))
     {
-        __HAL_TIM_CLEAR_FLAG(&TIM2_Handler, TIM_FLAG_UPDATE);
-        Software_PWM_LED_Control();  // 执行软件PWM控制
+        __HAL_TIM_CLEAR_FLAG(&TIM2_Handler, TIM_FLAG_UPDATE);  // 清除中断标志
+        Software_PWM_LED_Control();                           // 执行软件PWM控制
     }
 }
