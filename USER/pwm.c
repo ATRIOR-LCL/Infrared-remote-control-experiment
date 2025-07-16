@@ -35,25 +35,6 @@ void TIM2_PWM_Init(u16 arr,u16 psc)
     HAL_TIM_Base_Start_IT(&TIM2_Handler);
 }
 
-//定时器PWM底层驱动初始化函数
-//功能：配置GPIO引脚复用功能，使PA8引脚输出TIM1的PWM信号
-//说明：此函数由HAL_TIM_PWM_Init()自动调用，无需手动调用
-//htim：定时器句柄指针
-void HAL_TIM_PWM_MspInit(TIM_HandleTypeDef *htim)
-{
-    GPIO_InitTypeDef GPIO_Initure;           // GPIO初始化结构体
-    __HAL_RCC_TIM1_CLK_ENABLE();			// 使能定时器1时钟
-    __HAL_RCC_GPIOA_CLK_ENABLE();			// 使能GPIOA端口时钟
-    
-    // 配置PA8引脚作为TIM1_CH1的PWM输出
-    GPIO_Initure.Pin=GPIO_PIN_8;           	// 选择PA8引脚
-    GPIO_Initure.Mode=GPIO_MODE_AF_PP;  	// 复用推挽输出模式
-    GPIO_Initure.Pull=GPIO_PULLUP;          // 内部上拉电阻
-    GPIO_Initure.Speed=GPIO_SPEED_HIGH;     // 高速IO模式
-    GPIO_Initure.Alternate= GPIO_AF1_TIM1;	// PA8复用为TIM1通道1功能
-    HAL_GPIO_Init(GPIOA,&GPIO_Initure);     // 初始化GPIO
-}
-
 //定时器基础功能底层驱动初始化函数
 //功能：使能定时器时钟，配置NVIC中断优先级
 //说明：此函数由HAL_TIM_Base_Init()自动调用，专门处理TIM2的底层配置
