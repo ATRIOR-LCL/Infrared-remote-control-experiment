@@ -1,12 +1,12 @@
 {
     // 禁用C/C++语法检查
-    "C_Cpp.errorSquiggles": "Disabled",
+    "C_Cpp.errorSquiggles": "disabled",
     
     // 禁用IntelliSense错误提示
-    "C_Cpp.intelliSenseEngine": "Disabled",
+    "C_Cpp.intelliSenseEngine": "disabled",
     
     // 可选：禁用其他语言服务功能
-    "C_Cpp.autocomplete": "Disabled",
+    "C_Cpp.autocomplete": "disabled",
     "C_Cpp.suggestSnippets": false,
     
     // 如果您还想禁用其他扩展的检查
