@@ -49,7 +49,6 @@ void Show_Key_Info_New(u8 key);         // 显示按键信息
 
 // 系统控制相关函数
 void Process_Remote_Key(u8 key);        // 处理红外遥控按键
-void LED_All_Control(u8 state);         // 控制所有LED状态
 
 // 实验21兼容函数（保持接口兼容性）
 void LED_Toggle(u8 led_num);            // 切换指定LED状态
@@ -560,24 +559,6 @@ void Process_Remote_Key(u8 key)
         default:  // 未定义按键，不执行任何操作
             break;
     }
-}
-
-// ==================== LED控制功能函数组 ====================
-
-// 所有LED统一控制函数
-// 功能：同时控制8路LED的开关状态
-// 参数：state - LED状态（1=关闭，0=开启）
-// 说明：直接操作硬件IO口，不影响软件PWM亮度控制
-void LED_All_Control(u8 state)
-{
-	LED0 = state;  // 控制LED0
-	LED1 = state;  // 控制LED1
-	LED2 = state;  // 控制LED2
-	LED3 = state;  // 控制LED3
-	LED4 = state;  // 控制LED4
-	LED5 = state;  // 控制LED5
-	LED6 = state;  // 控制LED6
-	LED7 = state;  // 控制LED7
 }
 
 // ==================== 实验21兼容接口函数组 ====================
