@@ -696,49 +696,12 @@ void System_Mode_Switch(void)
 void Show_Key_Info_New(u8 key)
 {
 	char str[50];  // 字符串缓冲区，存储格式化后的按键信息
-	
-	// ========== 按键信息显示区域设置 ==========
-	/*
-	 * 按键信息显示的视觉设计：
-	 * - 红色字体：RED = 0xF800，在任何背景上都醒目
-	 * - 白色背景：WHITE = 0xFFFF，提供高对比度底色
-	 * - 区域清除：确保新信息完全覆盖旧信息
-	 * - 固定位置：Y=225-240，屏幕底部15像素高度
-	 */
 	POINT_COLOR = RED;                       // 设置字体颜色为红色，突出按键信息
 	BACK_COLOR = WHITE;                      // 设置背景颜色为白色，形成强烈对比
-	
-	/*
-	 * LCD_Fill()清除显示区域：
-	 * - 起始坐标：(10, 225) - 左边距10像素，距底部15像素
-	 * - 结束坐标：(230, 240) - 右边距10像素，到屏幕底部
-	 * - 填充颜色：WHITE - 白色背景为新文字做准备
-	 * - 作用：清除之前的按键信息，防止文字重叠
-	 */
 	LCD_Fill(10, 225, 230, 240, WHITE);     // 清除按键信息显示区域
-	
-	// ========== 按键码到按键名称的映射转换 ==========
-	/*
-	 * 按键映射表设计原理：
-	 * 1. 使用switch-case结构实现快速查找
-	 * 2. 按键值来源于NEC协议红外解码
-	 * 3. 按键名称采用英文缩写，简洁明了
-	 * 4. sprintf格式化：统一的"Key:0x%02X NAME"格式
-	 * 5. 功能分组：系统控制、数字键、方向键、音量键等
-	 */
 	switch(key)
 	{
-		// ========== 系统控制按键映射 ==========
 		case 162: sprintf(str, "Key:0x%02X POWER", key); break;    // POWER键：页面切换功能
-		
-		// ========== 数字按键0-9映射 ==========
-		/*
-		 * 数字键设计说明：
-		 * - NUM0-NUM7：对应LED0-LED7的独立控制
-		 * - NUM8：信息显示功能（预留扩展）
-		 * - NUM9：所有LED同时切换功能
-		 * - 按键值：来自红外遥控器的NEC协议编码
-		 */
 		case 66:  sprintf(str, "Key:0x%02X NUM0", key); break;     // 数字0：LED0控制
 		case 104: sprintf(str, "Key:0x%02X NUM1", key); break;     // 数字1：LED1控制
 		case 152: sprintf(str, "Key:0x%02X NUM2", key); break;     // 数字2：LED2控制
@@ -749,55 +712,16 @@ void Show_Key_Info_New(u8 key)
 		case 16:  sprintf(str, "Key:0x%02X NUM7", key); break;     // 数字7：LED7控制
 		case 56:  sprintf(str, "Key:0x%02X NUM8", key); break;     // 数字8：信息显示功能
 		case 90:  sprintf(str, "Key:0x%02X NUM9", key); break;     // 数字9：所有LED切换
-		
-		// ========== 方向和控制按键映射 ==========
-		/*
-		 * 方向键功能设计：
-		 * - UP/DOWN：亮度调节，支持长按连续调节
-		 * - LEFT/RIGHT：预留功能，可扩展其他控制
-		 * - PLAY：播放键，预留多媒体控制功能
-		 */
 		case 98:  sprintf(str, "Key:0x%02X UP", key); break;       // UP键：亮度增加
 		case 168: sprintf(str, "Key:0x%02X DOWN", key); break;     // DOWN键：亮度降低
 		case 34:  sprintf(str, "Key:0x%02X LEFT", key); break;     // LEFT键：预留功能
 		case 194: sprintf(str, "Key:0x%02X RIGHT", key); break;    // RIGHT键：预留功能
 		case 2:   sprintf(str, "Key:0x%02X PLAY", key); break;     // PLAY键：预留功能
-		
-		// ========== 音量和特殊功能键映射 ==========
-		/*
-		 * 特殊功能键设计：
-		 * - VOL+/VOL-：音量键，可扩展音频控制
-		 * - DELETE：删除键，关闭所有LED功能
-		 * - ALIENTEK：厂商标识键，可用于特殊功能
-		 */
 		case 144: sprintf(str, "Key:0x%02X VOL+", key); break;     // 音量+：预留功能
 		case 224: sprintf(str, "Key:0x%02X VOL-", key); break;     // 音量-：预留功能
 		case 82:  sprintf(str, "Key:0x%02X DELETE", key); break;   // DELETE键：关闭所有LED
 		case 226: sprintf(str, "Key:0x%02X ALIENTEK", key); break; // ALIENTEK键：预留功能
-		
-		// ========== 未知按键处理 ==========
-		/*
-		 * 未知按键处理机制：
-		 * - 显示十六进制按键码，便于调试新按键
-		 * - "Unknown"标识，提示用户该按键未定义功能
-		 * - 为系统扩展新按键功能提供基础
-		 */
 		default:  sprintf(str, "Key:0x%02X Unknown", key); break; // 未定义的按键
 	}
-	
-	// ========== 按键信息显示输出 ==========
-	/*
-	 * LCD_ShowString()显示按键信息：
-	 * - 位置：(10, 227) - 左边距10像素，距底部13像素
-	 * - 宽度：220像素 - 足够显示完整按键信息
-	 * - 字体：12像素高度 - 适合底部信息显示
-	 * - 内容：格式化的按键信息字符串
-	 * 
-	 * 显示效果示例：
-	 * - "Key:0x62 POWER" (POWER键)
-	 * - "Key:0x42 NUM0" (数字0键)  
-	 * - "Key:0x62 UP" (UP键)
-	 */
 	LCD_ShowString(10, 227, 220, 12, 12, str);  // 在屏幕底部显示按键信息
 }
-
